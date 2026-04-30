@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepMind Style Family Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;700&display=swap');
+        
+        :root {
+            --dm-blue: #0645ad;
+            --dm-bg: #ffffff;
+            --dm-surface: #f0f4f8;
+        }
+
+        body { 
+            font-family: 'Inter', 'Noto Sans KR', sans-serif; 
+            background: radial-gradient(circle at top right, #eef2ff, #ffffff);
+            min-height: 100vh;
+            color: #1a1c1e;
+        }
+
+        .dm-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border-radius: 24px;
+        }
+
+        .greek-text {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(90deg, #0645ad, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .input-focus:focus {
+            border-color: #0645ad;
+            box-shadow: 0 0 0 4px rgba(6, 69, 173, 0.1);
+        }
+
+        /* DeepMind Logo-like Dot Pattern */
+        .dot-pattern {
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12 dot-pattern">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Brand Header -->
+        <header class="mb-12 text-center">
+            <div class="inline-block px-4 py-1.5 mb-4 rounded-full bg-blue-50 text-blue-700 text-xs font-bold tracking-widest uppercase">
+                Divine Order & Planning
+            </div>
+            <h1 class="text-4xl md:text-5xl font-light tracking-tight mb-4">
+                Family <span class="font-bold text-slate-900">Event Intelligence</span>
+            </h1>
+            <p class="text-slate-500 max-w-md mx-auto">
+                <span class="greek-text italic">οἶκος</span> (오이코스 / 집)의 화평을 위한 <br>지능적인 기록과 사역의 도구
+            </p>
+        </header>
+
+        <div class="grid md:grid-cols-5 gap-8">
+            <!-- Left: Input Control -->
+            <div class="md:col-span-2 space-y-6">
+                <div class="dm-card p-8">
+                    <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        행사 등록 
+                        <span class="text-xs font-normal text-slate-400 font-mono">/ τάξις (탁시스)</span>
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1 ml-1 uppercase tracking-tighter">Event Title</label>
+                            <input type="text" id="eventTitle" placeholder="심방, 예배, 생신 등" 
+                                class="w-full bg-white p-4 border border-slate-200 rounded-2xl outline-none transition-all input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1 ml-1 uppercase tracking-tighter">Event Date</label>
+                            <input type="date" id="eventDate" 
+                                class="w-full bg-white p-4 border border-slate-200 rounded-2xl outline-none transition-all input-focus text-slate-600">
+                        </div>
+                        <button onclick="addEvent()" 
+                            class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 mt-4">
+                            스케줄 추가하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Display List -->
+            <div class="md:col-span-3">
+                <div class="dm-card p-8 min-h-[400px]">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-xl font-semibold flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            진행 사역 목록
+                            <span class="text-xs font-normal text-slate-400 font-mono">/ διακονία (디아코니아)</span>
+                        </h2>
+                        <span id="eventCount" class="text-xs font-bold bg-slate-100 px-3 py-1 rounded-full text-slate-500">0 Items</span>
+                    </div>
+
+                    <div id="eventList" class="space-y-4">
+                        <!-- Items populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let events = JSON.parse(localStorage.getItem('dm_family_events')) || [];
+
+        function renderEvents() {
+            const list = document.getElementById('eventList');
+            const countLabel = document.getElementById('eventCount');
+            
+            countLabel.innerText = `${events.length} Items`;
+
+            if (events.length === 0) {
+                list.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-20 opacity-30">
+                        <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                        <p class="font-medium">현재 예정된 사역 계획이 없습니다.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = events.map((ev, index) => `
+                <div class="group flex items-center justify-between p-5 bg-white border border-slate-100 rounded-3xl hover:border-blue-200 transition-all hover:shadow-md">
+                    <div class="flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 group-hover:scale-150 transition-transform"></div>
+                        <div>
+                            <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest">${ev.date}</p>
+                            <h3 class="text-lg font-semibold text-slate-800">${ev.title}</h3>
+                        </div>
+                    </div>
+                    <button onclick="deleteEvent(${index})" class="opacity-0 group-hover:opacity-100 p-2 text-slate-300 hover:text-red-500 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addEvent() {
+            const title = document.getElementById('eventTitle').value;
+            const date = document.getElementById('eventDate').value;
+
+            if (!title || !date) return;
+
+            events.push({ title, date });
+            events.sort((a, b) => new Date(a.date) - new Date(b.date));
+            saveAndRender();
+            
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDate').value = '';
+        }
+
+        function deleteEvent(index) {
+            events.splice(index, 1);
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('dm_family_events', JSON.stringify(events));
+            renderEvents();
+        }
+
+        renderEvents();
+    </script>
+</body>
+</html>
